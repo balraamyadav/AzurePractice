@@ -1,0 +1,104 @@
+Azure Public IP - Quick Notes
+What is a Public IP?
+
+A Public IP Address in Azure allows Azure resources (VMs, Load Balancers, Application Gateways, etc.) to communicate with the Internet.
+
+Common Use Cases
+Access a Virtual Machine from the Internet (SSH/RDP)
+Expose a web application
+Associate with a Load Balancer
+Associate with an Application Gateway
+Ingress traffic for AKS
+Create a Public IP
+Command
+az network public-ip create \
+  --resource-group <resource-group-name> \
+  --name <public-ip-name>
+Example
+az network public-ip create \
+  --resource-group kml_rg_main-616ff0398a0e415d \
+  --name devops-pip
+Verify Public IP
+List all Public IPs
+az network public-ip list \
+  --resource-group kml_rg_main-616ff0398a0e415d \
+  -o table
+Show details of a specific Public IP
+az network public-ip show \
+  --resource-group kml_rg_main-616ff0398a0e415d \
+  --name devops-pip
+Important Properties
+Property	Description
+Name	Name of the Public IP
+Resource Group	Container holding Azure resources
+IP Address	Actual public IP assigned
+Allocation Method	Static or Dynamic
+SKU	Basic or Standard
+Location	Azure Region
+Provisioning State	Succeeded/Failed
+Static vs Dynamic IP
+Static	Dynamic
+Never changes	Can change
+Preferred for production	Mostly used for testing
+Fixed endpoint	Temporary endpoint
+
+Example:
+
+Static IP: 20.127.34.8
+Azure CLI Commands You Should Remember
+Create
+az network public-ip create \
+  --resource-group RG \
+  --name devops-pip
+List
+az network public-ip list -o table
+Show
+az network public-ip show \
+  --resource-group RG \
+  --name devops-pip
+Delete
+az network public-ip delete \
+  --resource-group RG \
+  --name devops-pip
+Interview Questions
+Q1. What is an Azure Public IP?
+
+An Azure Public IP enables Azure resources to communicate with the Internet.
+
+Q2. What are the allocation methods available?
+Static
+Dynamic
+Q3. What is the difference between Basic and Standard SKU?
+Basic	Standard
+Legacy SKU	Recommended SKU
+Less secure	More secure
+Open by default	Requires NSG rules
+Q4. Can a VM have multiple Public IPs?
+
+Yes, by attaching multiple NICs or IP configurations.
+
+Q5. How do you create a Public IP using Azure CLI?
+az network public-ip create \
+  --resource-group myRG \
+  --name myPublicIP
+KodeKloud Exam Tip
+
+When a task says:
+
+"Allocate a Public IP address named devops-pip"
+
+The minimum command required is:
+
+az network public-ip create \
+  --resource-group <RG_NAME> \
+  --name devops-pip
+
+Then verify:
+
+az network public-ip list -o table
+
+If you see:
+
+devops-pip   Succeeded
+
+the task is complete. ✅
