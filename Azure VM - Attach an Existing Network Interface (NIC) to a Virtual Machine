@@ -1,0 +1,202 @@
+Azure VM - Attach an Existing Network Interface (NIC) to a Virtual Machine
+Objective
+
+Attach an existing Network Interface (nautilus-nic) to an existing Virtual Machine (nautilus-vm) in the southcentralus region.
+
+Prerequisites
+Azure CLI installed
+Logged into Azure
+Correct subscription selected
+Existing VM
+Existing Network Interface
+VM must be deallocated before attaching another NIC
+Step 1: Login to Azure
+az login
+
+If prompted to choose a subscription, press Enter if the correct one is already selected.
+
+Verify the login:
+
+az account show
+Step 2: Find the Resource Group
+
+List all VMs:
+
+az vm list -o table
+
+Example:
+
+Name          ResourceGroup                  Location
+------------  -----------------------------  --------------
+nautilus-vm   KML_RG_MAIN-0BB9AC3B163F4F01   southcentralus
+
+Resource Group:
+
+KML_RG_MAIN-0BB9AC3B163F4F01
+Step 3: Deallocate the Virtual Machine
+
+Azure does not allow adding or removing NICs while the VM is running.
+
+Command:
+
+az vm deallocate \
+    --resource-group KML_RG_MAIN-0BB9AC3B163F4F01 \
+    --name nautilus-vm
+
+Wait until it completes.
+
+Step 4: Attach the Existing NIC
+
+Command:
+
+az vm nic add \
+    --resource-group KML_RG_MAIN-0BB9AC3B163F4F01 \
+    --vm-name nautilus-vm \
+    --nics nautilus-nic
+
+Successful output:
+
+Primary NIC:
+nautilus-vmVMNic
+
+Secondary NIC:
+nautilus-nic
+
+This confirms the NIC has been attached.
+
+Step 5: Start the Virtual Machine
+
+Once the NIC is attached:
+
+az vm start \
+    --resource-group KML_RG_MAIN-0BB9AC3B163F4F01 \
+    --name nautilus-vm
+
+Wait until the VM starts.
+
+Step 6: Verify the VM Status
+
+Check the power state:
+
+az vm get-instance-view \
+    --resource-group KML_RG_MAIN-0BB9AC3B163F4F01 \
+    --name nautilus-vm \
+    --query "instanceView.statuses[?starts_with(code,'PowerState/')].displayStatus" \
+    -o tsv
+
+Expected output:
+
+VM running
+
+If you see:
+
+VM deallocated
+
+it means the VM is still stopped. Run:
+
+az vm start \
+    --resource-group KML_RG_MAIN-0BB9AC3B163F4F01 \
+    --name nautilus-vm
+Step 7: Verify the NIC is Attached
+
+List all NICs attached to the VM:
+
+az vm nic list \
+    --resource-group KML_RG_MAIN-0BB9AC3B163F4F01 \
+    --vm-name nautilus-vm \
+    -o table
+
+Expected:
+
+Name
+------------------
+nautilus-vmVMNic
+nautilus-nic
+Complete Workflow
+# Login
+az login
+
+# Find Resource Group
+az vm list -o table
+
+# Stop VM
+az vm deallocate \
+    --resource-group <RG> \
+    --name <VM>
+
+# Attach NIC
+az vm nic add \
+    --resource-group <RG> \
+    --vm-name <VM> \
+    --nics <NIC>
+
+# Start VM
+az vm start \
+    --resource-group <RG> \
+    --name <VM>
+
+# Verify VM status
+az vm get-instance-view \
+    --resource-group <RG> \
+    --name <VM> \
+    --query "instanceView.statuses[?starts_with(code,'PowerState/')].displayStatus" \
+    -o tsv
+
+# Verify NIC attachment
+az vm nic list \
+    --resource-group <RG> \
+    --vm-name <VM> \
+    -o table
+Important Azure CLI Commands
+Task	Command
+Login	az login
+List VMs	az vm list -o table
+Stop (Deallocate) VM	az vm deallocate
+Start VM	az vm start
+Restart VM	az vm restart
+Attach NIC	az vm nic add
+Remove NIC	az vm nic remove
+Show NICs	az vm nic list
+Check VM Status	az vm get-instance-view
+Why Must the VM Be Deallocated?
+
+Azure allows adding or removing a network interface only when the VM is deallocated. This ensures the VM's virtual hardware configuration can be safely updated.
+
+Interview Questions
+1. Can you attach a NIC to a running Azure VM?
+
+Answer: No. The VM must first be deallocated before attaching or detaching a network interface.
+
+2. What is the difference between stopping and deallocating a VM?
+Stop	Deallocate
+OS shuts down	VM is stopped and compute resources are released
+Compute charges may continue	Compute charges stop (storage charges still apply)
+Hardware remains allocated	Hardware allocation is released
+3. Which command attaches an existing NIC?
+az vm nic add \
+    --resource-group <RG> \
+    --vm-name <VM> \
+    --nics <NIC>
+4. How do you verify the VM is running?
+az vm get-instance-view \
+    --resource-group <RG> \
+    --name <VM> \
+    --query "instanceView.statuses[?starts_with(code,'PowerState/')].displayStatus" \
+    -o tsv
+
+Expected output:
+
+VM running
+5. How do you verify that a NIC is attached?
+az vm nic list \
+    --resource-group <RG> \
+    --vm-name <VM> \
+    -o table
+
+The output should include the attached NIC, such as nautilus-nic.
+
+Key Points to Remember
+Deallocate the VM before modifying its network interfaces.
+Attach the existing NIC using az vm nic add.
+Start the VM after the NIC is attached.
+Verify both the VM power state (VM running) and the NIC attachment before considering the task complete.
